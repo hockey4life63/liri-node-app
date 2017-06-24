@@ -3,6 +3,7 @@ let Spotify = require('node-spotify-api');
 let request = require('request')
 let Twitter = require('twitter');
 let fs = require('fs')
+const inquirer = require("inquirer");
 
 let client = new Twitter(keys.twitterKeys);
 
@@ -106,5 +107,24 @@ liri["do-what-it-says"] = function() {
 //liri["my-tweets"]()
 
 //convert query into single string
-let query = process.argv.splice(3).reduce((acc, val) => acc + "+" + val, "")
-liri[process.argv[2]](query)
+inquirer
+    .prompt([{
+            type: "list",
+            message: "What would you like liri to do?",
+            choices: ["do-what-it-says", "movie-this", "spotify-this-song", "my-tweets"],
+            name: "command"
+        }
+
+    ]).then(function(response) {
+        if (response.command === "movie-this" || response.command === "spotify-this-song") {
+            inquirer.prompt([{
+                type: "input",
+                message: "What do you want me to search for?",
+                name: "query"
+            }]).then(function(nestRes) {
+                liri[response.command](nestRes.query);
+            })
+        } else {
+            liri[response.command]()
+        }
+    })
